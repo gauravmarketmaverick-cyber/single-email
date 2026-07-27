@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<title>Ellington &amp; Vale &mdash; Correspondence</title>
+
+<!--
+  ELLINGTON & VALE — HTML EMAIL TEMPLATE (v2 — luxury correspondence pass)
+  =========================================================================
+  Nested tables + inline CSS only, for correct rendering in Gmail
+  (web/app) and Outlook desktop (Word engine — no flexbox, grid, CSS
+  background-images on table cells, or CSS transforms).
+
+  CUSTOMIZE PER CLIENT: replace every [Bracketed Placeholder] below.
+  Keep width/height on every <img> — they hold the layout together
+  when images are blocked (the default until a recipient clicks
+  "display images").
+
+  DESIGN DECISIONS — PRODUCTION ASSET PASS:
+
+  1) CORRECTION on transparency: an earlier version of this file claimed
+     the wax seal, signature, and corner artwork had baked-in, non-
+     transparent backgrounds. That was WRONG — it was based on how the
+     preview tool rendered transparent PNGs (a soft vignette), not on
+     the actual pixel data. Checking the real alpha channel (via
+     System.Drawing) confirmed all three are genuinely transparent
+     (alpha=0) around the artwork. No re-export is needed for
+     transparency. Sender note still stands separately: the signature
+     artwork's script reads "Mark," not "Gaurav" — worth a matching
+     re-scan if that's not intentional.
+
+  2) SIGNATURE & CORNER ARTWORK are now PRE-CROPPED STANDALONE FILES,
+     not CSS crop-hacks. The previous approach (an oversized <img>
+     inside an overflow:hidden box, shifted with a negative margin) is
+     a known email technique but proved unreliable in Gmail's mobile
+     app specifically — it caused the signature to nearly vanish and
+     the corner art to render fragments in what looked like "the wrong
+     direction."
+
+     SIGNATURE REMOVED FROM THE TEMPLATE (as of this pass) — every
+     version supplied so far has been unusable for a different reason:
+       - sign.jpg: flat opaque white bg, no transparency (JPEG limit)
+       - multi.jpg: opaque BLACK bg, and the ink itself is near-black
+         too (~15-25 out of 255) — almost no contrast between the
+         signature and its own backdrop; not fixable with color-keying,
+         needs re-export from the source with real ink/background
+         contrast (gold/bronze or dark ink on white or transparent)
+     The closing block now reads "With warm regards," straight into the
+     printed name/title, with extra padding added to compensate for the
+     missing visual weight. REQUIREMENTS FOR THE NEXT SIGNATURE FILE:
+     PNG format, genuinely transparent background, ink color that
+     visibly contrasts against ivory paper, one signature per file (not
+     stacked variants), tight crop around the strokes, 600-800px+ wide
+     source. Once a usable file exists, re-add the <img> row removed
+     from the CLOSING/SIGNATURE section below and reduce the
+     "With warm regards," padding-bottom back down (was 24px pre-
+     removal, bumped to 40px to compensate — see that section's own
+     comment).
+
+     An earlier, still-serviceable transparent crop (of a signature that
+     read "Mark") remains available at d:\single-email\_ready_to_upload\
+     signature\signature-cropped.png (654x325, 2.01:1 ratio) if wanted
+     as a placeholder in the meantime — not currently wired in.
+
+     The CORNER FLOURISH artwork was dropped entirely rather than
+     chasing a 4th cropped-image approach — see #2a below.
+
+  2a) CORNERS ARE NOW PURE CSS, NO IMAGE — reverted to the original
+     zero-dependency approach: no image, no upload, no crop-hack
+     fragility — renders identically everywhere, including with images
+     blocked. The corner-tl/tr/bl/br.png files generated earlier are
+     unused.
+
+  2b) BORDER MARGIN REMOVED — the 3x3 corner-grid structure (which
+     existed to hold the corner art) is gone entirely, along with the
+     ~56px ivory margin it created between the velvet background and
+     the bronze border. Simplified to two plain nested bordered tables:
+     an outer 1px bronze line, an 8px gap, then a second inner 1px
+     bronze line — the same "double-line engraved" look, but the velvet
+     now runs right up to the outer line instead of stopping ~56px short
+     of it. UPDATE: that 8px gap was initially left ivory (#F8F3EA,
+     inherited from when this table doubled as the paper background),
+     which showed up as a visible flat-white/ivory ring between the two
+     border lines once the real paper texture was added inside — a
+     user-reported "white space" bug. Fixed by making the gap's own
+     table + cell explicitly `#4B1F2E` (the velvet's flat fallback
+     tone) instead, so the burgundy reads as continuous right up to the
+     second line, with no ivory seam interrupting it. Only the INNER
+     bordered table (one level in) carries the ivory/texture paper
+     background now — see the "tiled paper texture" comment below.
+
+     Ornamental scrollwork corners (if wanted later) would require a proper
+     custom-drawn asset (not achievable in plain CSS) if wanted later.
+
+  3) WHITE-BORDER FIX — the border-grid's edge/corner <td> cells relied
+     on inheriting `background-color` from their parent <table> instead
+     of declaring their own. Several email renderers (Gmail's app
+     among them) don't reliably cascade a table's background down to
+     child cells that don't set their own — those cells were rendering
+     default white instead of the ivory paper color, showing as a thin
+     white seam around the letter. Fixed by giving every corner/edge
+     cell in the border grid its own explicit `bgcolor` + `background-
+     color:#F8F3EA`, so nothing relies on inheritance.
+
+     SAME BUG, FOUND AGAIN AT THE OUTERMOST LEVEL: the <body> tag and
+     the very first wrapping <table> (the ones holding the whole email,
+     before the velvet <td>) only had `background-color` via CSS
+     `style`, no `bgcolor` attribute — user screenshots showed a plain
+     white strip along the top and part of the left edge of the email
+     on Gmail's mobile app, in the exact spot this would cause. Fixed
+     by adding explicit `bgcolor="#4B1F2E"` to both. General rule going
+     forward for this template: every single element that needs a
+     specific background color must carry BOTH the `bgcolor` attribute
+     AND the CSS `background-color` — relying on inheritance from a
+     parent, at any nesting level, is what keeps causing this.
+
+  4) RECIPIENT BLOCK simplified — the standalone recipient-name line
+     was removed from above the date; with no company/location to
+     accompany a bare first name, it read as a redundant repeat of the
+     "Dear [Name]," salutation directly below it. Now just the date
+     appears before the salutation. For a real client letter with a
+     full name + company + location, that inside-address block is
+     worth reinstating — it reads properly once it's a full block, not
+     a lone floating name.
+
+  5) VELVET BACKGROUND — real texture wired in via `background-image` +
+     `background-size:cover`, oxblood `#4B1F2E` as the fallback
+     `background-color`. Outlook DESKTOP ignores `background-size`
+     entirely and just shows the flat fallback color — deliberate
+     graceful degradation (a non-seamless photographic texture can't be
+     tiled via Outlook's VML technique without visible seams). Gmail,
+     Apple/Android Mail, and Outlook.com webmail all show the real
+     texture.
+
+  6) SPACING — corner cells now 64px (up from the original 48px, roomier
+     for the real artwork); content side-padding is 50px. Body paragraph
+     spacing and the gap before the salutation were widened further this
+     pass in response to "let the words breathe" — see the BODY and
+     CLOSING sections below.
+
+  7) PAPER TEXTURE ADDED — a subtle embossed floral texture
+     (assets/iv/iv.jpg, 500x500 JPG) now sits behind the letter content,
+     replacing the flat-only #F8F3EA. Unlike the letterhead.png idea
+     considered earlier (rejected because Outlook's VML background
+     technique needs a fixed height, which conflicts with variable body
+     copy), this uses the "tile fill" VML technique instead of "frame"
+     (stretch) — a tile repeats correctly at ANY height, sidestepping
+     that limitation entirely. This is the one background in the whole
+     template that renders in Outlook desktop too, not just Gmail/Apple/
+     Android/webmail. Implementation: plain CSS `background-image` +
+     `background-repeat:repeat` on the paper <td>, plus a `<v:rect
+     type="tile">` VML block for Outlook, wrapping the same content.
+     Source texture averaged RGB(234,229,223) vs. the target ivory
+     RGB(248,243,234) — about 6% darker/greyer — so a brightness-
+     corrected version was generated (`+14R +14G +11B`) and left at
+     _ready_to_upload/texture/iv-corrected.jpg for a closer tonal match;
+     the template currently uses the original, already-live iv.jpg
+     directly so nothing is broken while that upload is pending. Tiling
+     seams were checked pixel-by-pixel at the edges — mostly very close
+     (diff <30/765), a few slightly higher — likely fine given how
+     subtle and low-contrast the pattern is, but worth a visual check
+     once rendered for real.
+
+  8) DARK-MODE COLOR LOCK added after Gmail's mobile app was observed
+     auto-inverting the palette (ivory paper going near-black, burgundy
+     wordmark going pale pink) despite the light-only color-scheme meta
+     tags — a known Gmail-app quirk where it heuristically re-colors
+     emails that don't lock down every value explicitly. Fixed via three
+     layers: (a) meta tags strengthened to "light only"; (b) redundant
+     `bgcolor` HTML attributes on every background cell (including the
+     border-grid cells, see #3 above); (c) a
+     `@media (prefers-color-scheme:dark)` block using "dm-*" classes
+     that simply re-assert the exact same light-mode colors, so there's
+     nothing left for the client to guess at or invert. CONFIRMED FIXED
+     by the user's own re-test on the device where the bug first showed.
+
+  9) MOBILE HYBRID CODING via the "ev-*" classes + the
+     `@media (max-width:600px)` block in <style>: border-grid goes
+     fluid (100% instead of fixed 640px), corners/seal/signature shrink,
+     content padding tightens, wordmark drops in size/letter-spacing.
+     Outlook DESKTOP ignores @media entirely and always renders the
+     fixed-width MSO-conditional table (640px) — expected, since Outlook
+     desktop has no narrow-viewport use case.
+
+  ASSETS IN USE (production, all live on GitHub Pages):
+    https://gauravmarketmaverick-cyber.github.io/single-email/assets/seal/IMG_4018.PNG
+    https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG  (outer velvet background)
+    https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg             (paper texture, tiled)
+    https://gauravmarketmaverick-cyber.github.io/single-email/assets/signature/sign.jpg  <-- LIVE, but flat white bg (see #2 above)
+
+  OPTIONAL UPGRADES, NOT YET UPLOADED:
+    assets/signature/signature-cropped.png  <-- transparent signature, ready in _ready_to_upload/signature/
+    assets/texture/iv-corrected.jpg         <-- brightness-matched paper texture, ready in _ready_to_upload/texture/
+                                                 (swap into both the CSS background-image AND the v:rect src if used)
+
+  NOT USED: corner-tl/tr/bl/br.png (generated but superseded by the pure-CSS
+  border — see decision #2a above). Safe to ignore/delete from _ready_to_upload/.
+-->
+
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<![endif]-->
+
+<style type="text/css">
+  body, table, td { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; }
+  body { margin: 0; padding: 0; width: 100% !important; }
+
+  /* MOBILE HYBRID OVERRIDES — Outlook desktop ignores @media entirely
+     and falls back to the fixed-width MSO-conditional table, so these
+     rules only affect Gmail app, Apple/Android Mail, Outlook mobile
+     app, and webmail on narrow viewports. */
+  @media only screen and (max-width: 600px) {
+    .ev-outer-pad { padding: 20px 0 20px 0 !important; }
+    .ev-container { width: 100% !important; }
+    .ev-pad { padding: 44px 26px 48px 26px !important; }
+    .ev-seal { width: 72px !important; height: 72px !important; }
+    .ev-wordmark { font-size: 25px !important; letter-spacing: 4px !important; }
+  }
+
+  /* DARK-MODE LOCK — Gmail's mobile app (iOS/Android) auto-inverts
+     colors it guesses are "light background / dark text" unless every
+     color is explicitly re-asserted here. The `color-scheme` meta tags
+     in <head> are the first line of defense but are inconsistently
+     honored across Gmail app versions, so this block is the reliable
+     backstop: it just repeats the exact light-mode values so there is
+     nothing left for the client to guess or invert. */
+  @media (prefers-color-scheme: dark) {
+    .dm-bg-paper { background-color: #F8F3EA !important; }
+    .dm-bg-outer { background-color: #4B1F2E !important; }
+    .dm-text-heading { color: #5B2233 !important; }
+    .dm-text-accent { color: #A67C52 !important; }
+    .dm-text-body { color: #2C2C2C !important; }
+  }
+</style>
+</head>
+<body bgcolor="#4B1F2E" style="margin:0; padding:0; background-color:#4B1F2E;">
+
+  <!-- Preheader: shows in inbox preview, hidden in the body -->
+  <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all; font-family:Georgia,'Times New Roman',serif;">
+    [Preheader preview text — one short line summarizing this letter. Remove this div if not needed.]
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
+    <tr>
+      <td align="center" bgcolor="#4B1F2E" background="https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
+
+        <!--[if mso]>
+        <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td>
+        <![endif]-->
+
+        <!-- ============ OUTER HAIRLINE BORDER ============ -->
+        <!-- Simplified per feedback: the wide ivory margin that used to sit between
+             the velvet background and the border (leftover from the old corner-art
+             layout) has been removed. The velvet now runs right up to this outer
+             bronze line, with only a small ivory gap before the second inner line —
+             giving the double-line "engraved stationery" look without the bulky
+             ivory buffer, and letting the velvet read as the dominant surrounding
+             surface right to the card's edge. -->
+        <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="ev-container dm-bg-outer" style="width:640px; max-width:640px; background-color:#4B1F2E; border:1px solid #8A6A52;">
+          <tr>
+            <td bgcolor="#4B1F2E" class="dm-bg-outer" style="padding:8px; background-color:#4B1F2E;">
+
+              <!-- ============ INNER HAIRLINE FRAME (tiled paper texture) ============ -->
+              <!-- Paper texture uses the bulletproof "tile fill" background technique:
+                   plain CSS background-image + repeat for Gmail/Apple/Android/webmail,
+                   and a VML v:rect with type="tile" for Outlook desktop. Unlike the
+                   velvet (a single non-repeating photo, which Outlook can't stretch to
+                   a variable height), a TILE genuinely works at any height in Outlook's
+                   VML, so this texture shows correctly in every client, including
+                   Outlook — the one background in this template that does. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #8A6A52;">
+                <tr>
+                  <td bgcolor="#F8F3EA" background="https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg" class="dm-bg-paper" style="background-color:#F8F3EA; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg'); background-repeat:repeat; background-position:top left;">
+
+                    <!--[if gte mso 9]>
+                    <v:rect fill="true" stroke="false" style="width:620px;height:100%;">
+                    <v:fill type="tile" src="https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg" color="#F8F3EA" />
+                    <v:textbox inset="0,0,0,0">
+                    <![endif]-->
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td class="ev-pad" style="padding:64px 50px 72px 50px;">
+
+                          <!-- ===== HEADER ===== -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center" style="padding-bottom:28px;">
+                                <img src="https://gauravmarketmaverick-cyber.github.io/single-email/assets/seal/IMG_4018.PNG" width="92" height="92" class="ev-seal" alt="Ellington &amp; Vale wax seal" style="display:block; border:0; outline:none; text-decoration:none; margin:0 auto;">
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" class="ev-wordmark dm-text-heading" style="padding-bottom:20px; font-family:Georgia,'Times New Roman',serif; font-size:36px; letter-spacing:7px; text-transform:uppercase; color:#5B2233;">
+                                Ellington &amp; Vale
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-bottom:20px;">
+                                <!-- refined divider: hairline + center ornament, built entirely from table borders/text -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                                  <tr>
+                                    <td width="90" style="width:90px; border-top:1px solid #A67C52; font-size:0; line-height:0;">&nbsp;</td>
+                                    <td class="dm-text-accent" style="padding:0 12px; font-family:Georgia,serif; font-size:11px; color:#A67C52;">&#9670;</td>
+                                    <td width="90" style="width:90px; border-top:1px solid #A67C52; font-size:0; line-height:0;">&nbsp;</td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" class="dm-text-accent" style="padding-bottom:56px; font-family:Georgia,'Times New Roman',serif; font-size:12px; letter-spacing:3.5px; text-transform:uppercase; color:#A67C52;">
+                                Strategic Design Studio
+                              </td>
+                            </tr>
+                          </table>
+                          <!-- ===== END HEADER ===== -->
+
+                          <!-- ===== DATE ===== -->
+                          <!-- Recipient's standalone name line was removed here — with no company/location
+                               to accompany it, a bare first name immediately above "Dear [Name]," read as
+                               a stutter rather than a proper inside-address block. For a real client letter
+                               with a full name + company + location, that block is worth reinstating.
+                               Date is left-aligned (not right) so it shares the same left edge as the
+                               salutation/body directly below it — with the recipient block gone, a lone
+                               right-aligned date had nothing to balance it and looked unanchored/misaligned
+                               against the rest of the letter's left margin. -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="left" class="dm-text-accent" style="padding-bottom:64px; font-family:Georgia,'Times New Roman',serif; font-size:13.5px; font-style:italic; color:#A67C52;">
+                                27 July 2026
+                              </td>
+                            </tr>
+                          </table>
+                          <!-- ===== END DATE ===== -->
+
+                          <!-- ===== BODY ===== -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                Dear Shivani,
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                We hope you are doing well.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                Thank you for taking the time to review this document.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                This is a test letter that we have prepared to check the overall presentation, layout, typography, spacing, and general look and feel of our letterhead. The content itself is only for testing purposes and does not represent the final version.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                Our objective is to ensure that the document maintains a clean, professional, and premium appearance before we begin using it for client communications. We would greatly appreciate it if you could review it from a design and readability perspective and let us know if anything stands out or could be improved.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:30px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                Please feel free to share your honest feedback on the overall look, formatting, alignment, spacing, or any other details that you think could make the document even better. Even the smallest suggestions would be valuable to us as we refine the final version.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:64px; font-family:Georgia,'Times New Roman',serif; font-size:16px; line-height:1.95; color:#2C2C2C;">
+                                Thank you once again for your time and support. We truly appreciate your help in reviewing this test document, and we look forward to hearing your thoughts on how it looks.
+                              </td>
+                            </tr>
+                          </table>
+                          <!-- ===== END BODY ===== -->
+
+                          <!-- ===== CLOSING / SIGNATURE ===== -->
+                          <!-- Signature image removed until a usable re-export exists (see the
+                               requirements list in the top-of-file comment and this session's
+                               history — every version supplied so far has had either a baked-in
+                               opaque background or near-zero ink/background contrast). Extra
+                               padding added below to compensate for the missing visual weight
+                               until the image returns. -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td class="dm-text-body" style="padding-bottom:40px; font-family:Georgia,'Times New Roman',serif; font-size:16px; color:#2C2C2C;">
+                                With warm regards,
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-heading" style="font-family:Georgia,'Times New Roman',serif; font-size:15px; letter-spacing:2.5px; text-transform:uppercase; color:#5B2233; padding-bottom:4px;">
+                                Gaurav
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-accent" style="font-family:Georgia,'Times New Roman',serif; font-size:13px; font-style:italic; color:#A67C52;">
+                                Founder &amp; Creative Director
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="dm-text-accent" style="font-family:Georgia,'Times New Roman',serif; font-size:13px; color:#A67C52;">
+                                Ellington &amp; Vale
+                              </td>
+                            </tr>
+                          </table>
+                          <!-- ===== END CLOSING / SIGNATURE ===== -->
+
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!--[if gte mso 9]>
+                    </v:textbox>
+                    </v:rect>
+                    <![endif]-->
+
+                  </td>
+                </tr>
+              </table>
+              <!-- ============ END INNER HAIRLINE FRAME ============ -->
+
+            </td>
+          </tr>
+        </table>
+        <!-- ============ END OUTER HAIRLINE BORDER ============ -->
+
+        <!--[if mso]>
+        </td></tr></table>
+        <![endif]-->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

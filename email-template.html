@@ -127,14 +127,25 @@
      worth reinstating — it reads properly once it's a full block, not
      a lone floating name.
 
-  5) VELVET BACKGROUND — real texture wired in via `background-image` +
-     `background-size:cover`, oxblood `#4B1F2E` as the fallback
-     `background-color`. Outlook DESKTOP ignores `background-size`
-     entirely and just shows the flat fallback color — deliberate
-     graceful degradation (a non-seamless photographic texture can't be
-     tiled via Outlook's VML technique without visible seams). Gmail,
-     Apple/Android Mail, and Outlook.com webmail all show the real
-     texture.
+  5) VELVET BACKGROUND — TEMPORARILY DISABLED as a diagnostic test. Was
+     wired in via `background-image` + `background-size:cover`, oxblood
+     `#4B1F2E` as the fallback `background-color`. Outlook DESKTOP
+     ignores `background-size` entirely and just shows the flat
+     fallback color. A white gap was reported at the top/left edge on
+     Gmail's mobile app — first suspected to be Brevo's own campaign
+     wrapper, but the user sent a test DIRECTLY through Gmail (via
+     GmailApp.sendEmail, bypassing Brevo entirely) and the gap was still
+     there, ruling that out. To isolate whether `background-size:cover`
+     itself is the culprit (Gmail's app may not support it, the same as
+     Outlook), the image was stripped out here, leaving pure flat
+     `#4B1F2E`, no image, on this element. NEXT STEP: re-upload this
+     file and re-test — if the gap disappears, the velvet image/cover
+     technique was the cause and needs a different implementation; if
+     it's still there with zero image involved, it's Gmail app's own
+     UI chrome around the message and not fixable from within the
+     email's HTML at all. Once confirmed either way, this note and the
+     <td> above should be updated accordingly — don't leave the velvet
+     removed permanently without resolving which it was.
 
   6) SPACING — corner cells now 64px (up from the original 48px, roomier
      for the real artwork); content side-padding is 50px. Body paragraph
@@ -254,7 +265,7 @@
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
     <tr>
-      <td align="center" bgcolor="#4B1F2E" background="https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
+      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E;">
 
         <!--[if mso]>
         <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td>

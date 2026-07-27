@@ -1,0 +1,85 @@
+/* ===========================
+   GLOBAL RESET
+=========================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===========================
+   PAGE
+=========================== */
+
+body {
+    background: #e9e7e2;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #1e1e1e;
+    padding: 60px 0;
+}
+
+/* ===========================
+   LETTER PAPER
+=========================== */
+
+.paper {
+    width: 850px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 80px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 70px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.monogram {
+    width: 60px;
+    height: auto;
+}
+
+.wordmark {
+    width: 220px;
+    display: block;
+}
+
+.tagline {
+    margin-top: 8px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #666666;
+}
+
+.date {
+    font-size: 15px;
+    color: #666666;
+}
+
+/* ===========================
+   RECIPIENT
+=========================== */
+
+.recipient {
+    margin-bottom: 55px;
+    line-height: 1.8;
+}
+
+.recipient-name {
+    font-weight: bold;
+}

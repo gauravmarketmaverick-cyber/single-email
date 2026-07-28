@@ -127,49 +127,47 @@
      worth reinstating — it reads properly once it's a full block, not
      a lone floating name.
 
-  5) VELVET BACKGROUND — wired in via `background-image` +
-     `background-size:cover`, oxblood `#4B1F2E` as the fallback
-     `background-color`. Outlook DESKTOP ignores `background-size`
-     entirely and just shows the flat fallback color — deliberate
-     graceful degradation. Gmail, Apple/Android Mail, and Outlook.com
-     webmail all show the real texture.
+  5) VELVET BACKGROUND / PAPER TEXTURE — REMOVED. Both used to be photo
+     textures applied via CSS `background-image` on a `<td>` (velvet
+     behind the whole card, a subtle floral emboss behind the paper).
+     Both are now FLAT COLORS ONLY (`#4B1F2E` outer, `#F8F3EA` paper).
 
-     RESOLVED (two independent root causes, found by bisection with a
-     series of minimal test emails sent straight through Gmail via
-     Apps Script, bypassing Brevo entirely): a white gap was reported
-     at the top/left edge of the email on Gmail's mobile app.
+     ROOT CAUSE, finally confirmed: a white-gap bug and a not-full-
+     width bug were both reported on Gmail's mobile app, and survived
+     a long series of fixes (dark-mode meta tags, bgcolor attributes on
+     every cell, removing a hidden preheader div, removing a redundant
+     legacy `background=` HTML attribute, making the card width fluid
+     via `max-width` instead of a media query). Each of those was a
+     real, valid fix for a real problem it targeted — but the gap and
+     width issues kept coming back regardless, because the true root
+     cause hadn't been touched yet: the user shared the actual HTML of
+     a real, working Brevo-generated template (confirmed rendering
+     correctly, no gap, no width issue, on the exact same phone/Gmail
+     app) for direct comparison. That template contains ZERO uses of
+     CSS `background-image` on any table cell, anywhere — every visual
+     (banner photo, profile pictures, icons) is a literal `<img>` tag in
+     its own cell, never a photo placed behind text via `background-
+     image`/`background-size`. That is the one technique our template
+     used that theirs deliberately never does. Conclusion: Gmail's
+     mobile app does not reliably support `background-image` on table
+     cells — likely explaining BOTH the painting glitch (the gap) and
+     the box-sizing glitch (the width) as symptoms of the same
+     underlying unreliability, not two separate bugs. FIX: dropped
+     `background-image` entirely from both the outer wrapper and the
+     paper `<td>`, along with the VML `<v:rect type="tile">` block that
+     existed only to support the paper texture in Outlook (no longer
+     needed with a flat color, which Outlook handles natively). Both
+     assets (assets/texture/IMG_4026.PNG, assets/iv/iv.jpg) are no
+     longer referenced by this template.
 
-     CAUSE 1 — HIDDEN PREHEADER DIV: a truly minimal test file (just
-     `<body bgcolor>` + one plain table, nothing else) sent clean, with
-     zero gap — proving early on that this was NOT universal Gmail
-     chrome (a wrong conclusion floated briefly mid-investigation,
-     before this minimal test existed, and corrected once it did). The
-     preheader div, added back on its own, reintroduced the gap
-     immediately: Gmail's mobile app does not fully respect the
-     standard `display:none / max-height:0 / overflow:hidden`
-     hidden-preheader technique and reserves visible blank space for it
-     anyway. FIX: the preheader div has been removed entirely.
-     Tradeoff: no custom inbox-preview snippet text anymore (Gmail
-     falls back to the email's own first visible line instead) — an
-     acceptable trade for a clean render.
-
-     CAUSE 2 — REDUNDANT `background=` HTML ATTRIBUTE: with the
-     preheader removed, the gap STILL came back in the full template.
-     Further bisection isolated a second, independent cause: this
-     element had BOTH the legacy HTML `background="..."` attribute AND
-     the modern CSS `background-image` pointing at the same image.
-     Gmail's app reserved blank space above the element with both
-     present; removing the redundant HTML attribute and keeping only
-     the CSS `background-image` fixed it. FIX: the `background="..."`
-     attribute has been removed from both places it appeared (this
-     velvet background and the paper texture background below) —
-     `background-image` alone is doing the job now.
-
-     Either cause was independently sufficient to reproduce the bug —
-     both had to be found and fixed. If any new background-image usage
-     is added to this template later, do NOT pair it with the legacy
-     `background=` attribute, and avoid hidden-preheader divs unless
-     re-tested with this same bisection method first.
+     IF A TEXTURED LOOK IS WANTED BACK: don't put it behind text via
+     background-image. Either (a) accept it as a plain `<img>` in its
+     own dedicated row, above or below the text rather than behind it
+     (matching how the Brevo reference template handles all its
+     imagery), or (b) treat it as a deliberate, tested tradeoff and
+     re-run the full bisection test method used above (a series of
+     minimal test emails sent via Apps Script, isolating one variable
+     at a time) before trusting it in production.
 
   6) SPACING — corner cells now 64px (up from the original 48px, roomier
      for the real artwork); content side-padding is 50px. Body paragraph
@@ -177,30 +175,7 @@
      pass in response to "let the words breathe" — see the BODY and
      CLOSING sections below.
 
-  7) PAPER TEXTURE ADDED — a subtle embossed floral texture
-     (assets/iv/iv.jpg, 500x500 JPG) now sits behind the letter content,
-     replacing the flat-only #F8F3EA. Unlike the letterhead.png idea
-     considered earlier (rejected because Outlook's VML background
-     technique needs a fixed height, which conflicts with variable body
-     copy), this uses the "tile fill" VML technique instead of "frame"
-     (stretch) — a tile repeats correctly at ANY height, sidestepping
-     that limitation entirely. This is the one background in the whole
-     template that renders in Outlook desktop too, not just Gmail/Apple/
-     Android/webmail. Implementation: plain CSS `background-image` +
-     `background-repeat:repeat` on the paper <td>, plus a `<v:rect
-     type="tile">` VML block for Outlook, wrapping the same content.
-     Source texture averaged RGB(234,229,223) vs. the target ivory
-     RGB(248,243,234) — about 6% darker/greyer — so a brightness-
-     corrected version was generated (`+14R +14G +11B`) and left at
-     _ready_to_upload/texture/iv-corrected.jpg for a closer tonal match;
-     the template currently uses the original, already-live iv.jpg
-     directly so nothing is broken while that upload is pending. Tiling
-     seams were checked pixel-by-pixel at the edges — mostly very close
-     (diff <30/765), a few slightly higher — likely fine given how
-     subtle and low-contrast the pattern is, but worth a visual check
-     once rendered for real.
-
-  8) DARK-MODE COLOR LOCK added after Gmail's mobile app was observed
+  7) DARK-MODE COLOR LOCK added after Gmail's mobile app was observed
      auto-inverting the palette (ivory paper going near-black, burgundy
      wordmark going pale pink) despite the light-only color-scheme meta
      tags — a known Gmail-app quirk where it heuristically re-colors
@@ -213,26 +188,23 @@
      nothing left for the client to guess at or invert. CONFIRMED FIXED
      by the user's own re-test on the device where the bug first showed.
 
-  9) MOBILE HYBRID CODING via the "ev-*" classes + `@media` blocks in
+  8) MOBILE HYBRID CODING via the "ev-*" classes + `@media` blocks in
      <style>. Outlook DESKTOP ignores @media entirely and always renders
      the fixed-width MSO-conditional table (640px) — expected, since
      Outlook desktop has no narrow-viewport use case.
 
-     WIDTH BUG FOUND & FIXED: the letter card was reported not filling
-     the phone's screen width on Gmail's mobile app — visible dark
-     margins on both sides. Root cause: the card's base/default styling
-     was a HARD-CODED FIXED `width:640px`, with a `@media (max-
-     width:600px)` rule meant to override it to `width:100%` on narrow
-     screens. Given everything else already found in this project where
-     Gmail's app doesn't honor standard techniques (dark-mode meta tags,
-     background-color inheritance, hidden preheader divs, dual
-     background attributes), that override could not be trusted to be
-     reliably applied — and evidently wasn't. FIX: the card's width is
-     no longer a fixed pixel value that depends on a media query to
-     become fluid — it's `width:100%; max-width:640px` in the BASE
-     style, working via plain CSS that needs no @media support at all.
-     Same reasoning applied to the outer margin padding: it now DEFAULTS
-     to the tight, mobile-safe `20px 0` (no media query needed), with a
+     WIDTH BUG — also reported on Gmail's mobile app (dark margins on
+     both sides, card not filling the screen). At the time this looked
+     like its own separate bug and was patched by making the card's
+     width fluid via plain CSS `max-width` instead of depending on a
+     media query — a reasonable, still-valid improvement on its own
+     merits. In hindsight, per the root-cause finding in #5 above, this
+     was very likely just another symptom of the same
+     `background-image`-on-`<td>` unreliability, not a truly separate
+     width-specific bug — but the fluid-width fix is harmless and worth
+     keeping regardless of which theory is right. It now DEFAULTS to
+     the tight, mobile-safe `20px 0` padding (no media query needed
+     for correctness), with a
      `@media (min-width:601px)` rule ADDING the more generous 64px/20px
      desktop margin as a bonus for wider screens — so if that
      enhancement doesn't apply somewhere, the fallback is still correct,
@@ -248,17 +220,17 @@
 
   ASSETS IN USE (production, all live on GitHub Pages):
     https://gauravmarketmaverick-cyber.github.io/single-email/assets/seal/IMG_4018.PNG
-    https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG  (outer velvet background)
-    https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg             (paper texture, tiled)
     https://gauravmarketmaverick-cyber.github.io/single-email/assets/signature/sign.jpg  <-- LIVE, but flat white bg (see #2 above)
 
-  OPTIONAL UPGRADES, NOT YET UPLOADED:
+  OPTIONAL UPGRADE, NOT YET UPLOADED:
     assets/signature/signature-cropped.png  <-- transparent signature, ready in _ready_to_upload/signature/
-    assets/texture/iv-corrected.jpg         <-- brightness-matched paper texture, ready in _ready_to_upload/texture/
-                                                 (swap into both the CSS background-image AND the v:rect src if used)
 
-  NOT USED: corner-tl/tr/bl/br.png (generated but superseded by the pure-CSS
-  border — see decision #2a above). Safe to ignore/delete from _ready_to_upload/.
+  NOT USED (background-image on <td> was found to be the root cause of the
+  Gmail-app rendering bugs — see decision #5 above):
+    assets/texture/IMG_4026.PNG (velvet)   — dropped, flat #4B1F2E now
+    assets/iv/iv.jpg (paper texture)       — dropped, flat #F8F3EA now
+    corner-tl/tr/bl/br.png                 — superseded earlier by pure-CSS border (#2a)
+    texture/iv-corrected.jpg               — moot, the texture itself was dropped
 -->
 
 <!--[if mso]>
@@ -319,7 +291,7 @@
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
     <tr>
-      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:20px 0; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
+      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:20px 0; background-color:#4B1F2E;">
 
         <!--[if mso]>
         <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td>
@@ -337,23 +309,13 @@
           <tr>
             <td bgcolor="#4B1F2E" class="dm-bg-outer" style="padding:8px; background-color:#4B1F2E;">
 
-              <!-- ============ INNER HAIRLINE FRAME (tiled paper texture) ============ -->
-              <!-- Paper texture uses the bulletproof "tile fill" background technique:
-                   plain CSS background-image + repeat for Gmail/Apple/Android/webmail,
-                   and a VML v:rect with type="tile" for Outlook desktop. Unlike the
-                   velvet (a single non-repeating photo, which Outlook can't stretch to
-                   a variable height), a TILE genuinely works at any height in Outlook's
-                   VML, so this texture shows correctly in every client, including
-                   Outlook — the one background in this template that does. -->
+              <!-- ============ INNER HAIRLINE FRAME ============ -->
+              <!-- Paper is a flat #F8F3EA color, not a background-image texture — see
+                   the top-of-file comment for why (background-image on a <td> was
+                   found to be the root cause of Gmail app rendering bugs). -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #8A6A52;">
                 <tr>
-                  <td bgcolor="#F8F3EA" class="dm-bg-paper" style="background-color:#F8F3EA; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg'); background-repeat:repeat; background-position:top left;">
-
-                    <!--[if gte mso 9]>
-                    <v:rect fill="true" stroke="false" style="width:620px;height:100%;">
-                    <v:fill type="tile" src="https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg" color="#F8F3EA" />
-                    <v:textbox inset="0,0,0,0">
-                    <![endif]-->
+                  <td bgcolor="#F8F3EA" class="dm-bg-paper" style="background-color:#F8F3EA;">
 
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
@@ -483,11 +445,6 @@
                         </td>
                       </tr>
                     </table>
-
-                    <!--[if gte mso 9]>
-                    </v:textbox>
-                    </v:rect>
-                    <![endif]-->
 
                   </td>
                 </tr>

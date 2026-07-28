@@ -134,31 +134,42 @@
      graceful degradation. Gmail, Apple/Android Mail, and Outlook.com
      webmail all show the real texture.
 
-     RESOLVED (actual root cause, found by bisection): a white gap was
-     reported at the top/left edge of the email on Gmail's mobile app.
-     Ruled out step by step: (1) sent a test DIRECTLY through Gmail (via
-     Apps Script's GmailApp.sendEmail, bypassing Brevo) — gap persisted,
-     ruling out Brevo's campaign wrapper; (2) stripped the velvet image
-     out entirely (flat `#4B1F2E`, zero image) and cache-busted the
-     re-test to rule out stale GitHub Pages CDN caching — gap STILL
-     persisted, ruling out `background-size:cover`/the image. At that
-     point a truly minimal test file (just `<body bgcolor>` + one plain
-     table, no XHTML namespaces, no MSO comments, no preheader div, no
-     VML) was sent the same way — ZERO gap, immediately confirming this
-     WAS something in our markup, not universal Gmail chrome (a wrong
-     conclusion floated briefly along the way — corrected here). Added
-     the pieces back one at a time: the HIDDEN PREHEADER DIV was the
-     one that reintroduced the gap the moment it was added — Gmail's
-     mobile app does not fully respect the standard
-     `display:none / max-height:0 / overflow:hidden` hidden-preheader
-     technique and reserves visible blank space for it anyway. FIX:
-     the preheader div has been removed entirely from this template.
-     Tradeoff: no more custom inbox-preview snippet text (Gmail will
-     fall back to using the email's own first visible line instead) —
-     an acceptable trade for a clean render. If a preheader is wanted
-     back in the future, it would need a different, Gmail-app-safe
-     hiding technique and should be re-tested with this same bisection
-     method before trusting it.
+     RESOLVED (two independent root causes, found by bisection with a
+     series of minimal test emails sent straight through Gmail via
+     Apps Script, bypassing Brevo entirely): a white gap was reported
+     at the top/left edge of the email on Gmail's mobile app.
+
+     CAUSE 1 — HIDDEN PREHEADER DIV: a truly minimal test file (just
+     `<body bgcolor>` + one plain table, nothing else) sent clean, with
+     zero gap — proving early on that this was NOT universal Gmail
+     chrome (a wrong conclusion floated briefly mid-investigation,
+     before this minimal test existed, and corrected once it did). The
+     preheader div, added back on its own, reintroduced the gap
+     immediately: Gmail's mobile app does not fully respect the
+     standard `display:none / max-height:0 / overflow:hidden`
+     hidden-preheader technique and reserves visible blank space for it
+     anyway. FIX: the preheader div has been removed entirely.
+     Tradeoff: no custom inbox-preview snippet text anymore (Gmail
+     falls back to the email's own first visible line instead) — an
+     acceptable trade for a clean render.
+
+     CAUSE 2 — REDUNDANT `background=` HTML ATTRIBUTE: with the
+     preheader removed, the gap STILL came back in the full template.
+     Further bisection isolated a second, independent cause: this
+     element had BOTH the legacy HTML `background="..."` attribute AND
+     the modern CSS `background-image` pointing at the same image.
+     Gmail's app reserved blank space above the element with both
+     present; removing the redundant HTML attribute and keeping only
+     the CSS `background-image` fixed it. FIX: the `background="..."`
+     attribute has been removed from both places it appeared (this
+     velvet background and the paper texture background below) —
+     `background-image` alone is doing the job now.
+
+     Either cause was independently sufficient to reproduce the bug —
+     both had to be found and fixed. If any new background-image usage
+     is added to this template later, do NOT pair it with the legacy
+     `background=` attribute, and avoid hidden-preheader divs unless
+     re-tested with this same bisection method first.
 
   6) SPACING — corner cells now 64px (up from the original 48px, roomier
      for the real artwork); content side-padding is 50px. Body paragraph
@@ -273,7 +284,7 @@
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
     <tr>
-      <td align="center" bgcolor="#4B1F2E" background="https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
+      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
 
         <!--[if mso]>
         <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td>
@@ -301,7 +312,7 @@
                    Outlook — the one background in this template that does. -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #8A6A52;">
                 <tr>
-                  <td bgcolor="#F8F3EA" background="https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg" class="dm-bg-paper" style="background-color:#F8F3EA; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg'); background-repeat:repeat; background-position:top left;">
+                  <td bgcolor="#F8F3EA" class="dm-bg-paper" style="background-color:#F8F3EA; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/iv/iv.jpg'); background-repeat:repeat; background-position:top left;">
 
                     <!--[if gte mso 9]>
                     <v:rect fill="true" stroke="false" style="width:620px;height:100%;">

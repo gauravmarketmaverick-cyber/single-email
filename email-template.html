@@ -213,13 +213,38 @@
      nothing left for the client to guess at or invert. CONFIRMED FIXED
      by the user's own re-test on the device where the bug first showed.
 
-  9) MOBILE HYBRID CODING via the "ev-*" classes + the
-     `@media (max-width:600px)` block in <style>: border-grid goes
-     fluid (100% instead of fixed 640px), corners/seal/signature shrink,
-     content padding tightens, wordmark drops in size/letter-spacing.
-     Outlook DESKTOP ignores @media entirely and always renders the
-     fixed-width MSO-conditional table (640px) — expected, since Outlook
-     desktop has no narrow-viewport use case.
+  9) MOBILE HYBRID CODING via the "ev-*" classes + `@media` blocks in
+     <style>. Outlook DESKTOP ignores @media entirely and always renders
+     the fixed-width MSO-conditional table (640px) — expected, since
+     Outlook desktop has no narrow-viewport use case.
+
+     WIDTH BUG FOUND & FIXED: the letter card was reported not filling
+     the phone's screen width on Gmail's mobile app — visible dark
+     margins on both sides. Root cause: the card's base/default styling
+     was a HARD-CODED FIXED `width:640px`, with a `@media (max-
+     width:600px)` rule meant to override it to `width:100%` on narrow
+     screens. Given everything else already found in this project where
+     Gmail's app doesn't honor standard techniques (dark-mode meta tags,
+     background-color inheritance, hidden preheader divs, dual
+     background attributes), that override could not be trusted to be
+     reliably applied — and evidently wasn't. FIX: the card's width is
+     no longer a fixed pixel value that depends on a media query to
+     become fluid — it's `width:100%; max-width:640px` in the BASE
+     style, working via plain CSS that needs no @media support at all.
+     Same reasoning applied to the outer margin padding: it now DEFAULTS
+     to the tight, mobile-safe `20px 0` (no media query needed), with a
+     `@media (min-width:601px)` rule ADDING the more generous 64px/20px
+     desktop margin as a bonus for wider screens — so if that
+     enhancement doesn't apply somewhere, the fallback is still correct,
+     just slightly tighter, never visibly broken the way the old
+     mobile-shrinks-a-fixed-640px-box approach was.
+
+     The remaining `@media (max-width:600px)` rules (corner/seal
+     shrinking, wordmark size, content padding) are lower-stakes
+     progressive enhancements — if Gmail's app doesn't honor those
+     either, the result is "slightly less refined on a phone," not
+     "visibly broken," so they were left as-is rather than restructured
+     the same way.
 
   ASSETS IN USE (production, all live on GitHub Pages):
     https://gauravmarketmaverick-cyber.github.io/single-email/assets/seal/IMG_4018.PNG
@@ -257,11 +282,21 @@
      rules only affect Gmail app, Apple/Android Mail, Outlook mobile
      app, and webmail on narrow viewports. */
   @media only screen and (max-width: 600px) {
-    .ev-outer-pad { padding: 20px 0 20px 0 !important; }
-    .ev-container { width: 100% !important; }
     .ev-pad { padding: 44px 26px 48px 26px !important; }
     .ev-seal { width: 72px !important; height: 72px !important; }
     .ev-wordmark { font-size: 25px !important; letter-spacing: 4px !important; }
+  }
+
+  /* DESKTOP ENHANCEMENT — the outer margin defaults to a small, mobile-safe
+     20px/0 (see the <td> below) rather than depending on a max-width query
+     to shrink it down, since Gmail's mobile app has proven unreliable at
+     honoring @media rules in this project (see the width-fix notes in the
+     top-of-file comment). This min-width query ADDS the more generous
+     desktop margin as a bonus for wider screens; if it's ever not honored
+     somewhere, the fallback is still a correct, if slightly tighter,
+     layout — never a broken one. */
+  @media only screen and (min-width: 601px) {
+    .ev-outer-pad { padding: 64px 20px !important; }
   }
 
   /* DARK-MODE LOCK — Gmail's mobile app (iOS/Android) auto-inverts
@@ -284,7 +319,7 @@
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
     <tr>
-      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:64px 20px; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
+      <td align="center" bgcolor="#4B1F2E" class="dm-bg-outer ev-outer-pad" style="padding:20px 0; background-color:#4B1F2E; background-image:url('https://gauravmarketmaverick-cyber.github.io/single-email/assets/texture/IMG_4026.PNG'); background-repeat:no-repeat; background-position:center top; background-size:cover;">
 
         <!--[if mso]>
         <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td>
@@ -298,7 +333,7 @@
              giving the double-line "engraved stationery" look without the bulky
              ivory buffer, and letting the velvet read as the dominant surrounding
              surface right to the card's edge. -->
-        <table role="presentation" align="center" width="640" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="ev-container dm-bg-outer" style="width:640px; max-width:640px; background-color:#4B1F2E; border:1px solid #8A6A52;">
+        <table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="ev-container dm-bg-outer" style="width:100%; max-width:640px; background-color:#4B1F2E; border:1px solid #8A6A52;">
           <tr>
             <td bgcolor="#4B1F2E" class="dm-bg-outer" style="padding:8px; background-color:#4B1F2E;">
 

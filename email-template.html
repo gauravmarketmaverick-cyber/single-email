@@ -134,19 +134,31 @@
      graceful degradation. Gmail, Apple/Android Mail, and Outlook.com
      webmail all show the real texture.
 
-     RESOLVED: a white gap was reported at the top/left edge of the
-     email on Gmail's mobile app. Diagnosed in two steps: (1) sent a
-     test DIRECTLY through Gmail (via Apps Script's GmailApp.sendEmail,
-     bypassing Brevo entirely) — gap was still there, ruling out Brevo's
-     campaign wrapper as the cause; (2) stripped this velvet image out
-     entirely, leaving pure flat `#4B1F2E` with zero image — gap was
-     STILL there, identical, ruling out `background-size:cover`/the
-     image as the cause too. With both explanations eliminated, this is
-     Gmail's own mobile app UI spacing around the message content —
-     verified to appear on other, unrelated HTML emails in the same
-     inbox too, confirming it's universal app behavior, not specific to
-     this template. NOT FIXABLE from within the email's HTML. The
-     velvet image has been restored since it was never the cause.
+     RESOLVED (actual root cause, found by bisection): a white gap was
+     reported at the top/left edge of the email on Gmail's mobile app.
+     Ruled out step by step: (1) sent a test DIRECTLY through Gmail (via
+     Apps Script's GmailApp.sendEmail, bypassing Brevo) — gap persisted,
+     ruling out Brevo's campaign wrapper; (2) stripped the velvet image
+     out entirely (flat `#4B1F2E`, zero image) and cache-busted the
+     re-test to rule out stale GitHub Pages CDN caching — gap STILL
+     persisted, ruling out `background-size:cover`/the image. At that
+     point a truly minimal test file (just `<body bgcolor>` + one plain
+     table, no XHTML namespaces, no MSO comments, no preheader div, no
+     VML) was sent the same way — ZERO gap, immediately confirming this
+     WAS something in our markup, not universal Gmail chrome (a wrong
+     conclusion floated briefly along the way — corrected here). Added
+     the pieces back one at a time: the HIDDEN PREHEADER DIV was the
+     one that reintroduced the gap the moment it was added — Gmail's
+     mobile app does not fully respect the standard
+     `display:none / max-height:0 / overflow:hidden` hidden-preheader
+     technique and reserves visible blank space for it anyway. FIX:
+     the preheader div has been removed entirely from this template.
+     Tradeoff: no more custom inbox-preview snippet text (Gmail will
+     fall back to using the email's own first visible line instead) —
+     an acceptable trade for a clean render. If a preheader is wanted
+     back in the future, it would need a different, Gmail-app-safe
+     hiding technique and should be re-tested with this same bisection
+     method before trusting it.
 
   6) SPACING — corner cells now 64px (up from the original 48px, roomier
      for the real artwork); content side-padding is 50px. Body paragraph
@@ -258,11 +270,6 @@
 </style>
 </head>
 <body bgcolor="#4B1F2E" style="margin:0; padding:0; background-color:#4B1F2E;">
-
-  <!-- Preheader: shows in inbox preview, hidden in the body -->
-  <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all; font-family:Georgia,'Times New Roman',serif;">
-    [Preheader preview text — one short line summarizing this letter. Remove this div if not needed.]
-  </div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#4B1F2E" class="dm-bg-outer" style="background-color:#4B1F2E;">
     <tr>
